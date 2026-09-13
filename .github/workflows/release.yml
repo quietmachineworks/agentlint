@@ -27,10 +27,10 @@ jobs:
             $0 ~ "^## \\[" v "\\]" { inside = 1; next }
             inside && /^## \[/ { exit }
             inside { print }
-          ' CHANGELOG.md > release-notes.md
-          test -s release-notes.md || { echo "CHANGELOG.md carries no section for $version"; exit 1; }
-          cat release-notes.md
+          ' CHANGELOG.md > "$RUNNER_TEMP/release-notes.md"
+          test -s "$RUNNER_TEMP/release-notes.md" || { echo "CHANGELOG.md carries no section for $version"; exit 1; }
+          cat "$RUNNER_TEMP/release-notes.md"
       - name: Build and publish the binaries
-        run: go run github.com/goreleaser/goreleaser/v2@v2.15.4 release --clean --release-notes release-notes.md
+        run: go run github.com/goreleaser/goreleaser/v2@v2.15.4 release --clean --release-notes "$RUNNER_TEMP/release-notes.md"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
