@@ -120,10 +120,18 @@ func resolveTarget(command string) (string, targetKind) {
 	if !ok {
 		return "", targetUnverifiable
 	}
-	if strings.ContainsRune(expanded, filepath.Separator) {
+	if looksLikePath(expanded) {
 		return expanded, targetPath
 	}
 	return expanded, targetLookup
+}
+
+// looksLikePath reports whether a token names a location rather than something
+// to find on PATH. Both separators count wherever this runs: a configuration
+// written on one platform is read on another, and a POSIX path taken for a bare
+// command name is reported as missing from PATH rather than as missing.
+func looksLikePath(token string) bool {
+	return strings.ContainsAny(token, `/\`)
 }
 
 // expand resolves the variables whose value this process can know.

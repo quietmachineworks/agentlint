@@ -231,6 +231,13 @@ func TestUnstartableMCPServersAreReported(t *testing.T) {
 			t.Fatalf("%s was not reported: %v", name, got)
 		}
 	}
+	// A POSIX path taken for a bare command name reports as missing from PATH
+	// rather than as missing, which is what Windows saw first.
+	for _, message := range got {
+		if strings.HasPrefix(message, "gone ") && !strings.Contains(message, "does not exist") {
+			t.Fatalf("a path was judged as a PATH lookup: %s", message)
+		}
+	}
 }
 
 func TestMintedCredentialsAreFoundInBothSettingsAndMCP(t *testing.T) {

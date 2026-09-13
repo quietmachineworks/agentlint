@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strings"
 
 	"github.com/quietmachineworks/agentlint/internal/inventory"
@@ -61,7 +60,7 @@ func judgeCommand(server inventory.MCPServer, where string) (Finding, bool) {
 	if !ok {
 		return Finding{}, false
 	}
-	if strings.ContainsRune(expanded, filepath.Separator) {
+	if looksLikePath(expanded) {
 		info, err := os.Stat(expanded)
 		if err != nil {
 			return Finding{
