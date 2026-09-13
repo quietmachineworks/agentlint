@@ -2,10 +2,10 @@
   "version": 2,
   "plugins": {
     "demo@somewhere": [
-      { "scope": "user", "installPath": "/Users/Bruno/wk/agentlint/testdata/config/plugins/cache/somewhere/demo/live" }
+      { "scope": "user", "installPath": "plugins/cache/somewhere/demo/live" }
     ],
     "offered@somewhere": [
-      { "scope": "user", "installPath": "/Users/Bruno/wk/agentlint/testdata/config/plugins/cache/somewhere/offered/1.0.0" }
+      { "scope": "user", "installPath": "plugins/cache/somewhere/offered/1.0.0" }
     ]
   }
 }

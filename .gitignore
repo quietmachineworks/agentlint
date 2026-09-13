@@ -1,2 +1,7 @@
 /dist/
 /agentlint
+
+# Claude Code adds **/.claude/settings.local.json to the global git excludes the
+# first time it writes one, which silently drops this fixture from the commit
+# and fails the suite only on a fresh clone.
+!testdata/**/.claude/settings.local.json

@@ -40,10 +40,17 @@ func loadPlugins(root string, settings []Settings) []Plugin {
 	var plugins []Plugin
 	for key, entries := range installed.Plugins {
 		for _, entry := range entries {
-			if entry.InstallPath == "" || !exists(entry.InstallPath) {
+			path := entry.InstallPath
+			if path == "" {
 				continue
 			}
-			plugins = append(plugins, Plugin{Key: key, Path: entry.InstallPath, Enabled: enabled[key]})
+			if !filepath.IsAbs(path) {
+				path = filepath.Join(root, path)
+			}
+			if !exists(path) {
+				continue
+			}
+			plugins = append(plugins, Plugin{Key: key, Path: path, Enabled: enabled[key]})
 		}
 	}
 	sort.Slice(plugins, func(i, j int) bool {
