@@ -8,6 +8,12 @@ updates:
       interval: monthly
     commit-message:
       prefix: "Raise"
+    ignore:
+      # x/text 0.40 and up require Go 1.26, and a tool people install with one
+      # command should not demand the newest toolchain. Lift this when the
+      # module's own floor moves.
+      - dependency-name: golang.org/x/text
+        versions: [">=0.40.0"]
 
   - package-ecosystem: github-actions
     directory: /
