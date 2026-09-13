@@ -13,6 +13,10 @@ go install github.com/quietmachineworks/agentlint/cmd/agentlint@latest
 agentlint
 ```
 
+Or take a binary for your platform from
+[Releases](https://github.com/quietmachineworks/agentlint/releases), which carry
+Linux, macOS and Windows on both architectures.
+
 Or from a clone, with nothing installed but Go:
 
 ```bash

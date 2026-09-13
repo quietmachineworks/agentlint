@@ -4,26 +4,40 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.1.0] - 2026-09-13
+
+First release.
 
 ### Added
 
-- `settings-scope`, and discovery of project and managed settings, so the
-  precedence stack is the documented one rather than two files in a directory.
-- Plugin-shipped hooks and MCP servers, read from the plugins the agent loads
-  rather than from every plugin on disk.
-
-- `mcp-unresolvable`, `secret-in-config`, `permission-rule`,
-  `settings-precedence`, `name-collision` and `description-shadowing`. MCP
-  servers are discovered where they actually live, which is beside the
-  configuration directory rather than inside it.
-
-- `settings-schema`, the whole settings file validated against the embedded
-  published schema. Pattern mismatches are warnings, not errors, and a defect
-  the dedicated checks already name is not reported twice.
-- Five checks over settings, hooks, subagents and skills, run from one binary
-  with no model and no network: `hook-unresolvable`, `settings-unknown-key`,
-  `settings-unknown-hook-event`, `agent-frontmatter`, `skill-frontmatter`.
-- The published Claude Code settings schema, embedded, read for the key list and
-  the hook event list.
-- `--json`, `--strict` and `--config`, with exit codes a CI job can branch on.
+- Thirteen checks over an agent's configuration, run from one binary with no
+  model, no network and no tokens. A published JSON schema already describes
+  `settings.json` and `claude plugin validate` already judges plugin manifests;
+  neither answers whether any of it is still true, which is what this does.
+- Hooks and MCP servers resolved against the machine: a command that is missing,
+  is a directory, or is not executable. A command whose target only the runtime
+  can expand is reported as unverifiable, never as broken.
+- The whole settings file validated against the published schema, which is
+  embedded. Pattern mismatches are warnings rather than errors, because a regex
+  in a published schema is the likeliest place for it to simplify the parser it
+  describes.
+- Top-level keys one edit away from a real setting, and hooks keyed on an event
+  that will never fire. The schema tolerates unknown keys, so nothing else
+  catches a typo there.
+- `settings-scope`: a key sitting at a level that does not honour it, which the
+  schema states per key and nothing else reports.
+- `settings-precedence` over the published stack: managed, project local, shared
+  project, user. A file with no published place in that stack is read and never
+  used to claim another decides nothing.
+- Permission rules judged against each other: an allowance covering a whole
+  tool, a rule another already covers, a rule a denial has taken back.
+- Credentials found in settings and MCP files, named by field and shape and
+  never by value.
+- Frontmatter of skills and subagents, including the fields the runtime
+  validator passes over. Subagents it does not discover at all.
+- One name installed twice, and two descriptions that are the same text.
+- Discovery that follows what the agent actually loads: symlinked skill trees, a
+  folded YAML description, and the plugins named in `installed_plugins.json`
+  rather than every version and listing on disk.
+- `--json`, `--strict`, `--config` and `--project`, with exit codes a CI job can
+  branch on. It writes nothing, ever.

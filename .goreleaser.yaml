@@ -15,5 +15,6 @@ archives:
       - goos: windows
         formats: [zip]
 
+# The release notes come from CHANGELOG.md, passed in by the workflow.
 changelog:
-  use: github-native
+  disable: true
