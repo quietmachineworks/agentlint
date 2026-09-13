@@ -1,0 +1,56 @@
+name: A check is wrong
+description: Something valid was flagged, or something broken was not
+labels: [check]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This is the report that matters most. A linter that cries wolf gets
+        muted, and one that stays quiet on a real defect is worse than absent.
+
+  - type: dropdown
+    id: direction
+    attributes:
+      label: Which way
+      options:
+        - Flagged something that is actually fine
+        - Stayed quiet on something that is actually broken
+    validations:
+      required: true
+
+  - type: input
+    id: check
+    attributes:
+      label: Which check
+      description: The slug printed under the finding, such as hook-unresolvable.
+    validations:
+      required: true
+
+  - type: textarea
+    id: config
+    attributes:
+      label: The configuration that shows it
+      description: |
+        The smallest fragment that reproduces it. Strip every credential
+        first: replace the value, keep the shape.
+      render: json
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What the right answer is, and what makes it right
+      description: |
+        The documented behaviour, the schema field, or the runtime behaviour you
+        observed. A check is changed against evidence, not against preference.
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Output of `agentlint --version`.
+    validations:
+      required: true

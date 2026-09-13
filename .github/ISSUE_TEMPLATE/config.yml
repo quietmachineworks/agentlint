@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/quietmachineworks/agentlint/blob/main/SECURITY.md
+    about: Report it privately rather than in a public issue.
+  - name: Whether a tool earns its place
+    url: https://github.com/quietmachineworks/qmw
+    about: agentlint says what is broken. Cost against usage, dormant skills and what to remove are /qmw:audit-agent.

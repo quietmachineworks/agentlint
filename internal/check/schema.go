@@ -107,9 +107,37 @@ func coveredElsewhere(leaf *jsonschema.ValidationError) bool {
 // failure otherwise prints the whole regex, which buries the value that failed.
 func describe(leaf *jsonschema.ValidationError) string {
 	if pattern, ok := leaf.ErrorKind.(*kind.Pattern); ok {
+		if sensitive(leaf.InstanceLocation) {
+			return "the value does not match the pattern this field is defined by"
+		}
 		return fmt.Sprintf("%s does not match the pattern this field is defined by", clamp(fmt.Sprintf("%v", pattern.Got), 90))
 	}
+	if sensitive(leaf.InstanceLocation) {
+		return "the value here is not what this field is defined to hold"
+	}
 	return clamp(leaf.ErrorKind.LocalizedString(englishPrinter()), 200)
+}
+
+// secretish names a field whose value is a credential often enough that no
+// report should carry it.
+var secretish = []string{"key", "token", "secret", "password", "credential", "auth", "header"}
+
+// sensitive reports whether a location may hold a credential. A finding there
+// names the field and the shape of the problem, never the value: a report that
+// pastes an API key into a terminal, a log or a CI annotation has leaked it.
+func sensitive(location []string) bool {
+	for _, segment := range location {
+		if segment == "env" {
+			return true
+		}
+		lowered := strings.ToLower(segment)
+		for _, needle := range secretish {
+			if strings.Contains(lowered, needle) {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func clamp(text string, limit int) string {

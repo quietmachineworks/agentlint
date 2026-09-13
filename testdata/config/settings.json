@@ -43,5 +43,9 @@
       "Bash(echo \\(hi\\))"
     ],
     "defaultMode": "plan"
-  }
+  },
+  "env": {
+    "ANTHROPIC_API_KEY": 12345
+  },
+  "apiKeyHelper": 99
 }

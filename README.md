@@ -1,5 +1,10 @@
 # agentlint
 
+[![CI](https://github.com/quietmachineworks/agentlint/actions/workflows/ci.yml/badge.svg)](https://github.com/quietmachineworks/agentlint/actions/workflows/ci.yml)
+[![Go Reference](https://pkg.go.dev/badge/github.com/quietmachineworks/agentlint.svg)](https://pkg.go.dev/github.com/quietmachineworks/agentlint)
+[![Go Report Card](https://goreportcard.com/badge/github.com/quietmachineworks/agentlint)](https://goreportcard.com/report/github.com/quietmachineworks/agentlint)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 Resolve what an agent's configuration declares against what is actually on the
 machine. Settings, hooks, subagents, skills. No model, no network, no tokens.
 
@@ -74,6 +79,12 @@ It writes nothing, ever.
 Permission-rule breadth and contradictions, cross-file precedence between user,
 project and policy settings, MCP server resolvability, secrets found in plain
 text, and lexical shadowing across descriptions.
+
+## Contributing
+
+[CONTRIBUTING.md](CONTRIBUTING.md) carries the checks to run and what a new
+check owes. Security reports go through the Security tab, not a public issue:
+[SECURITY.md](SECURITY.md).
 
 ## License
 

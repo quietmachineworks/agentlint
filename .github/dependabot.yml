@@ -1,0 +1,17 @@
+# Two things go stale here: the schema library and the actions the workflows
+# pin by major tag. Nothing else in the tree has a version.
+version: 2
+updates:
+  - package-ecosystem: gomod
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: "Raise"
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: "Raise"

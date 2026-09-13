@@ -1,0 +1,34 @@
+name: Bug
+description: agentlint crashes, hangs, or does something other than what it documents
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For a check that reached the wrong verdict, use "A check is wrong"
+        instead. For a security vulnerability, do not open an issue: follow
+        [SECURITY.md](https://github.com/quietmachineworks/agentlint/blob/main/SECURITY.md).
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you expected, and what it did instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: command
+    attributes:
+      label: The command and its output
+      render: shell
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version and platform
+      description: Output of `agentlint --version`, and your OS.
+    validations:
+      required: true

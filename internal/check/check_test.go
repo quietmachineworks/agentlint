@@ -130,3 +130,21 @@ func TestUnknownHookEventIsNotReportedTwice(t *testing.T) {
 		}
 	}
 }
+
+// A report that pastes a credential into a terminal, a log or a CI annotation
+// has leaked it, so a finding on a secret-bearing field names the field and
+// the shape of the problem and never the value.
+func TestCredentialValuesNeverReachAFinding(t *testing.T) {
+	reported := 0
+	for _, finding := range run(t) {
+		if strings.Contains(finding.Message, "12345") || strings.Contains(finding.Message, "99") {
+			t.Fatalf("a value from a secret-bearing field reached the report: %v", finding)
+		}
+		if strings.HasPrefix(finding.Where, "env") || strings.HasPrefix(finding.Where, "apiKeyHelper") {
+			reported++
+		}
+	}
+	if reported == 0 {
+		t.Fatal("the malformed secret-bearing fields were not reported at all")
+	}
+}
