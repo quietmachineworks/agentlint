@@ -1,0 +1,14 @@
+{
+  "model": "opus",
+  "permisions": { "allow": [] },
+  "feedbackDrafts": {},
+  "hooks": {
+    "PreToolUse": [
+      { "matcher": "Bash", "hooks": [{ "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/runtime.sh" }] },
+      { "matcher": "Write", "hooks": [{ "type": "command", "command": "$CLAUDE_CONFIG_DIR/hooks/missing.sh" }] }
+    ],
+    "PostToolYuse": [
+      { "matcher": "Edit", "hooks": [{ "type": "command", "command": "echo ok" }] }
+    ]
+  }
+}
