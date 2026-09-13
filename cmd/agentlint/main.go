@@ -6,14 +6,28 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"runtime/debug"
+	"strings"
 
 	"github.com/quietmachineworks/agentlint/internal/check"
 	"github.com/quietmachineworks/agentlint/internal/inventory"
 	"github.com/quietmachineworks/agentlint/internal/report"
 )
 
-// version is set at build time by the release tooling.
-var version = "dev"
+// version is set at build time by the release tooling. A binary from
+// `go install` is not built that way, so the module version it was built from
+// stands in rather than the word "dev".
+var version = ""
+
+func release() string {
+	if version != "" {
+		return version
+	}
+	if info, ok := debug.ReadBuildInfo(); ok && info.Main.Version != "" && info.Main.Version != "(devel)" {
+		return strings.TrimPrefix(info.Main.Version, "v")
+	}
+	return "dev"
+}
 
 func main() {
 	root := flag.String("config", "", "configuration directory to read (default: CLAUDE_CONFIG_DIR, else ~/.claude)")
@@ -24,7 +38,7 @@ func main() {
 	flag.Parse()
 
 	if *showVersion {
-		fmt.Println("agentlint", version)
+		fmt.Println("agentlint", release())
 		return
 	}
 

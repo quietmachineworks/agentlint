@@ -15,6 +15,6 @@ archives:
       - goos: windows
         formats: [zip]
 
-# The release notes come from CHANGELOG.md, passed in by the workflow.
-changelog:
-  disable: true
+# The release notes are the changelog section for the tag, passed to
+# --release-notes by the workflow. Disabling the changelog here empties the
+# release body instead of leaving that file to fill it.

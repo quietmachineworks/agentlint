@@ -4,6 +4,17 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2026-09-13
+
+### Fixed
+
+- A binary from `go install` reported its version as "dev". Only a release build
+  carries the version as a linker flag, so the module version it was built from
+  now stands in when that flag is absent.
+- The 0.1.0 release was published with empty notes. Disabling the changelog told
+  goreleaser to empty the release body rather than leave the file the workflow
+  passes to fill it.
+
 ## [0.1.0] - 2026-09-13
 
 First release.
