@@ -8,6 +8,9 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- `settings-schema`, the whole settings file validated against the embedded
+  published schema. Pattern mismatches are warnings, not errors, and a defect
+  the dedicated checks already name is not reported twice.
 - Five checks over settings, hooks, subagents and skills, run from one binary
   with no model and no network: `hook-unresolvable`, `settings-unknown-key`,
   `settings-unknown-hook-event`, `agent-frontmatter`, `skill-frontmatter`.

@@ -2,6 +2,7 @@ package check_test
 
 import (
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/quietmachineworks/agentlint/internal/check"
@@ -98,5 +99,34 @@ func TestAgentWithoutFrontmatterIsCaught(t *testing.T) {
 	findings := find(run(t), "agent-frontmatter")
 	if len(findings) != 1 || findings[0].Severity != check.Error {
 		t.Fatalf("got %v", findings)
+	}
+}
+
+// A regex in a published schema is the likeliest place for it to be a
+// simplification of the parser it describes, so a rule the pattern rejects is
+// reported as suspect and never fails a run on its own.
+func TestPatternMismatchIsOnlyAWarning(t *testing.T) {
+	for _, finding := range find(run(t), "settings-schema") {
+		if !strings.HasPrefix(finding.Where, "permissions.allow") {
+			continue
+		}
+		if finding.Severity != check.Warning {
+			t.Fatalf("a pattern mismatch must not be an error: %v", finding)
+		}
+		if finding.Fix == "" {
+			t.Fatal("no caveat attached to a pattern mismatch")
+		}
+		return
+	}
+	t.Fatal("the rule the published pattern rejects was not reported")
+}
+
+// One defect is one finding: the schema also rejects an unknown hook event, and
+// the dedicated check says it better.
+func TestUnknownHookEventIsNotReportedTwice(t *testing.T) {
+	for _, finding := range find(run(t), "settings-schema") {
+		if len(finding.Where) >= 5 && finding.Where[:5] == "hooks" {
+			t.Fatalf("duplicate of settings-unknown-hook-event: %v", finding)
+		}
 	}
 }

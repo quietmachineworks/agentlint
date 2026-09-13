@@ -46,6 +46,7 @@ type Checker interface {
 func All() []Checker {
 	return []Checker{
 		HookResolvable{},
+		SettingsSchema{},
 		SettingsKeys{},
 		SettingsHookEvents{},
 		AgentFrontmatter{},

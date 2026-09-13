@@ -42,6 +42,10 @@ command does not resolve, and every subagent definition, which
 
 ## Checks
 
+- `settings-schema` - the whole file against the published schema, which is
+  embedded. A pattern mismatch is a warning rather than an error: a regex in a
+  published schema is the likeliest place for it to be a simplification of the
+  parser it describes.
 - `hook-unresolvable` - a hook names a program that is missing, is a directory,
   or is not executable. A command whose target only the runtime can expand is
   reported as unverifiable, never as broken.
@@ -67,10 +71,9 @@ It writes nothing, ever.
 
 ## Not yet
 
-Full validation against the embedded schema, permission-rule breadth and
-contradictions, cross-file precedence between user, project and policy settings,
-MCP server resolvability, secrets found in plain text, and lexical shadowing
-across descriptions.
+Permission-rule breadth and contradictions, cross-file precedence between user,
+project and policy settings, MCP server resolvability, secrets found in plain
+text, and lexical shadowing across descriptions.
 
 ## License
 
