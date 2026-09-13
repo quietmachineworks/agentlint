@@ -86,7 +86,7 @@ func (s SettingsSchema) Run(inv *inventory.Inventory) []Finding {
 			severity, note := weigh(leaf)
 			findings = append(findings, Finding{
 				Check: "settings-schema", Severity: severity, File: settings.Path, Where: where,
-				Message: leaf.ErrorKind.LocalizedString(englishPrinter()), Fix: note,
+				Message: describe(leaf), Fix: note,
 			})
 		}
 	}
@@ -101,6 +101,23 @@ func coveredElsewhere(leaf *jsonschema.ValidationError) bool {
 	}
 	_, additional := leaf.ErrorKind.(*kind.AdditionalProperties)
 	return additional
+}
+
+// describe renders one violation short enough to read in a terminal. A pattern
+// failure otherwise prints the whole regex, which buries the value that failed.
+func describe(leaf *jsonschema.ValidationError) string {
+	if pattern, ok := leaf.ErrorKind.(*kind.Pattern); ok {
+		return fmt.Sprintf("%s does not match the pattern this field is defined by", clamp(fmt.Sprintf("%v", pattern.Got), 90))
+	}
+	return clamp(leaf.ErrorKind.LocalizedString(englishPrinter()), 200)
+}
+
+func clamp(text string, limit int) string {
+	runes := []rune(text)
+	if len(runes) <= limit {
+		return text
+	}
+	return string(runes[:limit]) + "..."
 }
 
 // weigh ranks one schema violation.
