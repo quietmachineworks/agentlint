@@ -33,6 +33,9 @@ jobs:
       - name: gofmt leaves nothing to say
         run: test -z "$(gofmt -l .)" || { gofmt -l .; exit 1; }
 
+  # Every action here is GitHub's own: this organization allows only those and
+  # verified creators, and a workflow naming any other fails before it starts.
+  # A linter that ships as a Go module needs no action at all.
   lint:
     runs-on: ubuntu-latest
     steps:
@@ -40,6 +43,5 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           go-version: '1.25'
-      - uses: golangci/golangci-lint-action@v8
-        with:
-          version: latest
+      - name: staticcheck
+        run: go run honnef.co/go/tools/cmd/staticcheck@2025.1.1 ./...

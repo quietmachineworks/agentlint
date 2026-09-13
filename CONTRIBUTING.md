@@ -31,10 +31,14 @@ go build ./...
 go vet ./...
 go test ./...
 gofmt -l .          # prints nothing
-golangci-lint run   # optional locally, runs in CI
+go run honnef.co/go/tools/cmd/staticcheck@2025.1.1 ./...
 ```
 
-No network, no install step, no credentials. CI runs all of it on Linux, macOS
+Every workflow uses GitHub's own actions and nothing else: this organization
+allows only those and verified creators, and a workflow naming any other fails
+before it starts. A tool that ships as a Go module needs no action at all.
+
+The first command above is the only one that touches the network. CI runs all of it on Linux, macOS
 and Windows on every push and pull request, because path handling is most of the
 risk here: a configuration tree is read by absolute path, and a skill manager
 links one source tree into the agent's folder rather than copying it.
