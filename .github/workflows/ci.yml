@@ -40,10 +40,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+      # The analysers run on current Go, not on the floor the module targets:
+      # they read this code rather than ship with it, and the newest of them
+      # stopped building on 1.25. The test jobs above are what hold the floor.
       - uses: actions/setup-go@v6
         with:
-          go-version: '1.25'
+          go-version: stable
       - name: staticcheck
         run: go run honnef.co/go/tools/cmd/staticcheck@2025.1.1 ./...
       - name: govulncheck
-        run: go run golang.org/x/vuln/cmd/govulncheck@latest ./...
+        run: go run golang.org/x/vuln/cmd/govulncheck@v1.8.0 ./...
