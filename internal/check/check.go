@@ -52,6 +52,7 @@ func All() []Checker {
 		SettingsKeys{},
 		PermissionRules{},
 		SettingsPrecedence{},
+		SettingsScope{},
 		SettingsHookEvents{},
 		AgentFrontmatter{},
 		SkillFrontmatter{},

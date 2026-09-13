@@ -104,8 +104,12 @@ command does not resolve, and every subagent definition, which
   already covers, and a rule a denial has already taken back. The runtime
   reaches deny before ask and ask before allow, so a rule can sit in the file
   deciding nothing.
-- `settings-precedence` - a scalar set in two files where only one is read. Keys
-  the runtime merges rather than replaces are left alone.
+- `settings-precedence` - a scalar set at two levels where only the higher one
+  is read. Keys the runtime merges rather than replaces are left alone, and a
+  file whose place in the stack is not published never decides a claim.
+- `settings-scope` - a key sitting in a file the runtime reads, under a name the
+  runtime reads, at a level that does not honour it. Managed-only keys in a
+  project file are the common case, and nothing warns about them.
 - `name-collision` - one name installed twice. The runtime reaches one of them,
   and the copy that loses looks dormant while being a duplicate.
 - `description-shadowing` - two descriptions that are the same text under
@@ -128,11 +132,23 @@ transcripts.
 
 It writes nothing, ever.
 
+## What it reads
+
+The user directory (`--config`), the repository's `.claude` (`--project`), the
+platform's managed settings, and the plugins the agent actually loads.
+
+That last one is not the plugin tree on disk. The cache keeps every version ever
+fetched and the marketplace tree keeps every plugin ever offered, installed or
+not, so discovery reads `installed_plugins.json` for the exact install path and
+`enabledPlugins` for whether it is switched on. Walking the tree instead counts
+an agent heavier than the one that starts and reports defects in files nothing
+reads: on the machine this was built against, the difference was 48 phantom
+skills and eight collisions that were stale versions of one plugin.
+
 ## Not yet
 
-Project and policy settings, which sit outside the configuration directory and
-override what is in it. Hook and MCP definitions that plugins install. A hook
-priced against how often its matcher fires.
+A hook priced against how often its matcher fires. Command-line settings passed
+with `--settings`, which sit between managed and project in the stack.
 
 ## Layout
 

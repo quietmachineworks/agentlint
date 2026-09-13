@@ -39,10 +39,14 @@ func mcpPaths(root string) []struct{ path, scope string } {
 	}
 }
 
-func loadMCP(root string) ([]MCPServer, []string) {
+func loadMCP(root string, plugins []Plugin) ([]MCPServer, []string) {
 	var servers []MCPServer
 	var read []string
-	for _, candidate := range mcpPaths(root) {
+	candidates := mcpPaths(root)
+	for _, path := range pluginFiles(plugins, ".mcp.json") {
+		candidates = append(candidates, struct{ path, scope string }{path, "plugin"})
+	}
+	for _, candidate := range candidates {
 		data, err := os.ReadFile(candidate.path)
 		if err != nil {
 			continue
@@ -73,4 +77,23 @@ func flatten(declared map[string]MCPServer, file, scope string) []MCPServer {
 		out = append(out, server)
 	}
 	return out
+}
+
+// pluginFiles are the definition files plugins bring. They are carried exactly
+// like the agent's own, and an inventory that skips them prices a lighter agent
+// than the one that runs.
+func pluginFiles(plugins []Plugin, name string) []string {
+	var found []string
+	for _, plugin := range Loaded(plugins) {
+		for _, candidate := range []string{
+			filepath.Join(plugin.Path, name),
+			filepath.Join(plugin.Path, "hooks", name),
+		} {
+			if exists(candidate) {
+				found = append(found, candidate)
+			}
+		}
+	}
+	sort.Strings(found)
+	return found
 }

@@ -2,6 +2,8 @@ package check_test
 
 import (
 	"path/filepath"
+	"reflect"
+	"sort"
 	"strings"
 	"testing"
 
@@ -16,7 +18,7 @@ func run(t *testing.T) []check.Finding {
 		t.Fatal(err)
 	}
 	t.Setenv("CLAUDE_CONFIG_DIR", root)
-	inv, err := inventory.Load(root)
+	inv, err := inventory.Load(root, root)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -192,9 +194,27 @@ func TestNarrowerRuleUnderAGlobIsReported(t *testing.T) {
 }
 
 func TestAnOverriddenScalarIsReported(t *testing.T) {
-	findings := find(run(t), "settings-precedence")
-	if len(findings) != 1 || findings[0].Where != "model" {
-		t.Fatalf("want only the overridden scalar, got %v", findings)
+	var overridden []string
+	for _, finding := range find(run(t), "settings-precedence") {
+		overridden = append(overridden, finding.Where)
+	}
+	sort.Strings(overridden)
+	want := []string{"cleanupPeriodDays", "model"}
+	if !reflect.DeepEqual(overridden, want) {
+		t.Fatalf("want %v, got %v", want, overridden)
+	}
+}
+
+// No published order places a settings.local.json beside the user file against
+// the levels below it, so nothing here may claim that it wins or loses.
+func TestUndocumentedScopeMakesNoPrecedenceClaim(t *testing.T) {
+	for _, finding := range find(run(t), "settings-precedence") {
+		if strings.HasSuffix(finding.File, filepath.Join("config", "settings.local.json")) {
+			t.Fatalf("claimed an order the documentation does not give: %v", finding)
+		}
+		if strings.Contains(finding.Message, "user local") {
+			t.Fatalf("used an unranked scope as the winner: %v", finding)
+		}
 	}
 }
 
@@ -265,6 +285,45 @@ func TestReferencesAndPlainValuesAreNotCalledSecrets(t *testing.T) {
 	for _, message := range messages(run(t), "secret-in-config") {
 		if strings.Contains(message, "SAFE_REFERENCE") || strings.Contains(message, "PATH_EXTRA") {
 			t.Fatalf("a value that is not a credential was reported: %s", message)
+		}
+	}
+}
+
+// A plugin's tree on disk is not what runs. The cache keeps every version ever
+// fetched and the marketplace keeps every plugin ever offered, so an inventory
+// that walks either one prices an agent heavier than the one that starts and
+// reports defects in files nothing reads.
+func TestOnlyInstalledAndEnabledPluginContentIsLoaded(t *testing.T) {
+	root, err := filepath.Abs("../../testdata/config")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("CLAUDE_CONFIG_DIR", root)
+	inv, err := inventory.Load(root, root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var stems []string
+	for _, skill := range inv.Skills {
+		stems = append(stems, skill.Stem)
+	}
+	sort.Strings(stems)
+	want := []string{"good", "good", "live-skill", "misnamed"}
+	if !reflect.DeepEqual(stems, want) {
+		t.Fatalf("want %v, got %v", want, stems)
+	}
+	for _, skill := range inv.Skills {
+		if strings.Contains(skill.Path, "stale") || strings.Contains(skill.Path, "marketplaces") {
+			t.Fatalf("read a tree the agent never loads: %s", skill.Path)
+		}
+	}
+}
+
+// A stale version of one plugin is not the same skill installed twice.
+func TestStaleVersionsAreNotReportedAsCollisions(t *testing.T) {
+	for _, finding := range find(run(t), "name-collision") {
+		if finding.Where == "live-skill" {
+			t.Fatalf("a cached older version was called a collision: %v", finding)
 		}
 	}
 }

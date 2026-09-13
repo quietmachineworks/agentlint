@@ -26,7 +26,7 @@ var interpreters = map[string]bool{
 
 func (h HookResolvable) Run(inv *inventory.Inventory) []Finding {
 	var findings []Finding
-	for _, settings := range inv.Settings {
+	for _, settings := range append(append([]inventory.Settings{}, inv.Settings...), inv.HookSources...) {
 		for event, matchers := range settings.Hooks {
 			for _, matcher := range matchers {
 				for _, hook := range matcher.Hooks {

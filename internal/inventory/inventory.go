@@ -14,6 +14,7 @@ import (
 // Settings is one settings file, kept as raw JSON so unknown keys survive.
 type Settings struct {
 	Path   string
+	Scope  Scope
 	Raw    map[string]json.RawMessage
 	Hooks  map[string][]HookMatcher
 	Parsed bool
@@ -45,11 +46,17 @@ type Definition struct {
 // Inventory is everything one run read.
 type Inventory struct {
 	Root     string
+	Project  string
 	Settings []Settings
-	Agents   []Definition
-	Skills   []Definition
-	MCP      []MCPServer
-	Read     []string
+	// HookSources carry hooks without being settings files: a plugin ships
+	// them, the runtime runs them, and nothing else about a settings file
+	// applies to their shape.
+	HookSources []Settings
+	Plugins     []Plugin
+	Agents      []Definition
+	Skills      []Definition
+	MCP         []MCPServer
+	Read        []string
 }
 
 // DefaultRoot is the configuration directory, overridable for tests and CI.
@@ -65,21 +72,21 @@ func DefaultRoot() string {
 }
 
 // Load reads every kind of item under root that this tool judges.
-func Load(root string) (*Inventory, error) {
-	inv := &Inventory{Root: root}
-	for _, name := range []string{"settings.json", "settings.local.json"} {
-		path := filepath.Join(root, name)
-		if _, err := os.Stat(path); err != nil {
+func Load(root, project string) (*Inventory, error) {
+	inv := &Inventory{Root: root, Project: project}
+	for _, candidate := range settingsPaths(root, project) {
+		if !exists(candidate.path) {
 			continue
 		}
-		inv.Settings = append(inv.Settings, loadSettings(path))
-		inv.Read = append(inv.Read, path)
+		inv.Settings = append(inv.Settings, loadSettings(candidate.path, candidate.scope))
+		inv.Read = append(inv.Read, candidate.path)
 	}
+	inv.Plugins = loadPlugins(root, inv.Settings)
 	inv.Agents = loadDefinitions(filepath.Join(root, "agents"), "")
 	if len(inv.Agents) > 0 {
 		inv.Read = append(inv.Read, filepath.Join(root, "agents"))
 	}
-	for _, dir := range skillDirs(root) {
+	for _, dir := range skillDirs(root, inv.Plugins) {
 		found := loadDefinitions(dir, "SKILL.md")
 		if len(found) == 0 {
 			continue
@@ -87,14 +94,44 @@ func Load(root string) (*Inventory, error) {
 		inv.Skills = append(inv.Skills, found...)
 		inv.Read = append(inv.Read, dir)
 	}
-	servers, readMCP := loadMCP(root)
+	for _, path := range pluginFiles(inv.Plugins, "hooks.json") {
+		entry := loadSettings(path, ScopePlugin)
+		if !entry.Parsed && entry.Err == nil {
+			continue
+		}
+		inv.HookSources = append(inv.HookSources, entry)
+		inv.Read = append(inv.Read, path)
+	}
+	servers, readMCP := loadMCP(root, inv.Plugins)
 	inv.MCP = servers
 	inv.Read = append(inv.Read, readMCP...)
 	return inv, nil
 }
 
-func loadSettings(path string) Settings {
-	s := Settings{Path: path}
+// settingsPaths are every file that contributes, lowest level first.
+func settingsPaths(root, project string) []struct {
+	path  string
+	scope Scope
+} {
+	type candidate = struct {
+		path  string
+		scope Scope
+	}
+	out := []candidate{
+		{filepath.Join(root, "settings.json"), ScopeUser},
+		{filepath.Join(root, "settings.local.json"), ScopeUserLocal},
+	}
+	if project != "" {
+		out = append(out, projectPaths(project)...)
+	}
+	for _, path := range managedPaths() {
+		out = append(out, candidate{path, ScopeManaged})
+	}
+	return out
+}
+
+func loadSettings(path string, scope Scope) Settings {
+	s := Settings{Path: path, Scope: scope}
 	data, err := os.ReadFile(path)
 	if err != nil {
 		s.Err = err
@@ -182,17 +219,10 @@ func read(path, stem string) (Definition, bool) {
 // skillDirs are the folders that hold skills: the agent's own, plus every one
 // a plugin brings. A plugin's skills are carried on every prompt exactly like
 // the agent's own, so an inventory that skips them understates the load.
-func skillDirs(root string) []string {
+func skillDirs(root string, plugins []Plugin) []string {
 	dirs := []string{filepath.Join(root, "skills")}
-	_ = filepath.WalkDir(filepath.Join(root, "plugins"), func(path string, entry os.DirEntry, err error) error {
-		if err != nil || !entry.IsDir() {
-			return nil
-		}
-		if entry.Name() == "skills" {
-			dirs = append(dirs, path)
-			return filepath.SkipDir
-		}
-		return nil
-	})
+	for _, plugin := range Loaded(plugins) {
+		dirs = append(dirs, filepath.Join(plugin.Path, "skills"))
+	}
 	return dirs
 }

@@ -57,5 +57,9 @@
     "PATH_EXTRA": "/usr/local/bin",
     "SOME_TOKEN": "9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f00"
   },
-  "apiKeyHelper": 99
+  "apiKeyHelper": 99,
+  "enabledPlugins": {
+    "demo@somewhere": true,
+    "offered@somewhere": false
+  }
 }

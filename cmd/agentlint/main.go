@@ -17,6 +17,7 @@ var version = "dev"
 
 func main() {
 	root := flag.String("config", "", "configuration directory to read (default: CLAUDE_CONFIG_DIR, else ~/.claude)")
+	project := flag.String("project", ".", "repository whose .claude settings take part (empty to read none)")
 	asJSON := flag.Bool("json", false, "write the run as JSON")
 	strict := flag.Bool("strict", false, "exit non-zero on warnings too")
 	showVersion := flag.Bool("version", false, "print the version and exit")
@@ -36,7 +37,7 @@ func main() {
 		os.Exit(2)
 	}
 
-	inv, err := inventory.Load(directory)
+	inv, err := inventory.Load(directory, *project)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "agentlint: %v\n", err)
 		os.Exit(2)

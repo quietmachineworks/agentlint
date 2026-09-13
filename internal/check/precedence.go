@@ -18,17 +18,19 @@ type SettingsPrecedence struct{}
 func (SettingsPrecedence) Name() string { return "settings-precedence" }
 
 // merged names the keys the runtime combines rather than replaces. A key here
-// set in both files is two contributions, not a contradiction.
-var merged = map[string]bool{"hooks": true, "permissions": true, "env": true}
+// set at two levels is two contributions, not a contradiction.
+var merged = map[string]bool{"hooks": true, "permissions": true}
 
 func (SettingsPrecedence) Run(inv *inventory.Inventory) []Finding {
-	if len(inv.Settings) < 2 {
-		return nil
-	}
 	var findings []Finding
-	for i := 0; i < len(inv.Settings)-1; i++ {
-		loser := inv.Settings[i]
-		for _, winner := range inv.Settings[i+1:] {
+	for _, loser := range inv.Settings {
+		for _, winner := range inv.Settings {
+			if !loser.Scope.Ordered() || !winner.Scope.Ordered() {
+				continue
+			}
+			if winner.Scope.Rank <= loser.Scope.Rank {
+				continue
+			}
 			findings = append(findings, compare(loser, winner)...)
 		}
 	}
@@ -59,8 +61,8 @@ func compare(loser, winner inventory.Settings) []Finding {
 		}
 		findings = append(findings, Finding{
 			Check: "settings-precedence", Severity: Warning, File: loser.Path, Where: key,
-			Message: fmt.Sprintf("%s sets this too, and wins; the value here decides nothing", filepath.Base(winner.Path)),
-			Fix:     fmt.Sprintf("drop %q from %s, or change the one that is read", key, filepath.Base(loser.Path)),
+			Message: fmt.Sprintf("%s settings set this too, and sit higher in the stack; the value here decides nothing", winner.Scope.Name),
+			Fix:     fmt.Sprintf("drop %q here, or change %s", key, filepath.Base(winner.Path)),
 		})
 	}
 	return findings

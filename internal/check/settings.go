@@ -56,7 +56,7 @@ func (SettingsHookEvents) Name() string { return "settings-unknown-hook-event" }
 func (SettingsHookEvents) Run(inv *inventory.Inventory) []Finding {
 	events := schema.HookEvents()
 	var findings []Finding
-	for _, settings := range inv.Settings {
+	for _, settings := range append(append([]inventory.Settings{}, inv.Settings...), inv.HookSources...) {
 		names := make([]string, 0, len(settings.Hooks))
 		for name := range settings.Hooks {
 			names = append(names, name)
