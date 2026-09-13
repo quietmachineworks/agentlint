@@ -40,12 +40,22 @@
   "permissions": {
     "allow": [
       "Bash(git status)",
-      "Bash(echo \\(hi\\))"
+      "Bash(git *)",
+      "Bash(echo \\(hi\\))",
+      "Bash",
+      "Read(~/notes/*)",
+      "Bash(rm -rf /tmp/build)"
+    ],
+    "deny": [
+      "Bash(rm -rf *)"
     ],
     "defaultMode": "plan"
   },
   "env": {
-    "ANTHROPIC_API_KEY": 12345
+    "ANTHROPIC_API_KEY": "sk-ant-api03-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "SAFE_REFERENCE": "${REAL_KEY}",
+    "PATH_EXTRA": "/usr/local/bin",
+    "SOME_TOKEN": "9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f00"
   },
   "apiKeyHelper": 99
 }

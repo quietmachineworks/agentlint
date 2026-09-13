@@ -95,22 +95,44 @@ command does not resolve, and every subagent definition, which
   description, budget.
 - `skill-frontmatter` - the same for skills, including the ones plugins bring,
   which are carried on every prompt exactly like the agent's own.
+- `mcp-unresolvable` - a server whose command is missing or not on PATH, an http
+  server with no url, an entry with nothing to start. A server that cannot start
+  costs a connection attempt every session and says nothing when it fails.
+- `secret-in-config` - a credential written into a settings or MCP file, named
+  by field and shape and never by value.
+- `permission-rule` - an allowance that grants a whole tool, a rule another
+  already covers, and a rule a denial has already taken back. The runtime
+  reaches deny before ask and ask before allow, so a rule can sit in the file
+  deciding nothing.
+- `settings-precedence` - a scalar set in two files where only one is read. Keys
+  the runtime merges rather than replaces are left alone.
+- `name-collision` - one name installed twice. The runtime reaches one of them,
+  and the copy that loses looks dormant while being a duplicate.
+- `description-shadowing` - two descriptions that are the same text under
+  different names. The floor is high on purpose: two hardening skills, one for
+  Linux and one for Windows, share most of their vocabulary and none of their
+  purpose, and reporting those is how a linter gets muted.
 
 ## What it does not do
 
-It does not judge whether a tool earns its place. Cost against usage, dormant
-skills, description shadowing and the decision to remove something are
+It does not judge whether a tool earns its place. Whether a skill ever fires,
+what it costs against what it returns, and the decision to remove it are
 [`/qmw:audit-agent`](https://github.com/quietmachineworks/qmw), which reads
 transcripts and weighs. agentlint states what is broken; audit-agent states what
 is not worth carrying.
+
+The line runs through shadowing rather than around it. That two descriptions
+claim the same request is a measurement, and it is here. Which of the two should
+be narrowed depends on which one has been firing, and that lives in the
+transcripts.
 
 It writes nothing, ever.
 
 ## Not yet
 
-Permission-rule breadth and contradictions, cross-file precedence between user,
-project and policy settings, MCP server resolvability, secrets found in plain
-text, and lexical shadowing across descriptions.
+Project and policy settings, which sit outside the configuration directory and
+override what is in it. Hook and MCP definitions that plugins install. A hook
+priced against how often its matcher fires.
 
 ## Layout
 

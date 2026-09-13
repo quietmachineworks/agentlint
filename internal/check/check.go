@@ -46,11 +46,17 @@ type Checker interface {
 func All() []Checker {
 	return []Checker{
 		HookResolvable{},
+		MCPResolvable{},
+		SecretInConfig{},
 		SettingsSchema{},
 		SettingsKeys{},
+		PermissionRules{},
+		SettingsPrecedence{},
 		SettingsHookEvents{},
 		AgentFrontmatter{},
 		SkillFrontmatter{},
+		NameCollision{},
+		DescriptionShadowing{},
 	}
 }
 

@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "gone": { "type": "stdio", "command": "/nowhere/at/all/server" },
+    "nameless": { "type": "http" },
+    "shapeless": { "type": "whatever" },
+    "fine": { "type": "http", "url": "https://example.com/mcp" },
+    "leaky": {
+      "type": "stdio",
+      "command": "/bin/sh",
+      "env": { "SERVICE_TOKEN": "ghp_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" }
+    }
+  }
+}

@@ -8,6 +8,11 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- `mcp-unresolvable`, `secret-in-config`, `permission-rule`,
+  `settings-precedence`, `name-collision` and `description-shadowing`. MCP
+  servers are discovered where they actually live, which is beside the
+  configuration directory rather than inside it.
+
 - `settings-schema`, the whole settings file validated against the embedded
   published schema. Pattern mismatches are warnings, not errors, and a defect
   the dedicated checks already name is not reported twice.

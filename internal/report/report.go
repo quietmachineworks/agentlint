@@ -26,6 +26,7 @@ type Counts struct {
 	Settings     int `json:"settings"`
 	Agents       int `json:"agents"`
 	Skills       int `json:"skills"`
+	MCP          int `json:"mcpServers"`
 	HookCommands int `json:"hookCommands"`
 	Errors       int `json:"errors"`
 	Warnings     int `json:"warnings"`
@@ -40,6 +41,7 @@ func Summarise(inv *inventory.Inventory, findings []check.Finding) Run {
 	run.Counts.Settings = len(inv.Settings)
 	run.Counts.Agents = len(inv.Agents)
 	run.Counts.Skills = len(inv.Skills)
+	run.Counts.MCP = len(inv.MCP)
 	for _, settings := range inv.Settings {
 		for _, matchers := range settings.Hooks {
 			for _, matcher := range matchers {
@@ -67,8 +69,8 @@ func JSON(w io.Writer, run Run) error {
 // Text writes the run for a terminal, grouped by file, errors first.
 func Text(w io.Writer, run Run) error {
 	fmt.Fprintf(w, "%s\n", run.Root)
-	fmt.Fprintf(w, "%d settings, %d hook commands, %d subagents, %d skills\n",
-		run.Counts.Settings, run.Counts.HookCommands, run.Counts.Agents, run.Counts.Skills)
+	fmt.Fprintf(w, "%d settings, %d hook commands, %d MCP servers, %d subagents, %d skills\n",
+		run.Counts.Settings, run.Counts.HookCommands, run.Counts.MCP, run.Counts.Agents, run.Counts.Skills)
 
 	byFile := map[string][]check.Finding{}
 	var order []string

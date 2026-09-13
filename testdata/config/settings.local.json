@@ -1,0 +1,9 @@
+{
+  "model": "haiku",
+  "cleanupPeriodDays": 7,
+  "permissions": {
+    "allow": [
+      "Bash(ls)"
+    ]
+  }
+}

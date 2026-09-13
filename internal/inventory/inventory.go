@@ -48,6 +48,7 @@ type Inventory struct {
 	Settings []Settings
 	Agents   []Definition
 	Skills   []Definition
+	MCP      []MCPServer
 	Read     []string
 }
 
@@ -86,6 +87,9 @@ func Load(root string) (*Inventory, error) {
 		inv.Skills = append(inv.Skills, found...)
 		inv.Read = append(inv.Read, dir)
 	}
+	servers, readMCP := loadMCP(root)
+	inv.MCP = servers
+	inv.Read = append(inv.Read, readMCP...)
 	return inv, nil
 }
 
