@@ -13,6 +13,13 @@ go install github.com/quietmachineworks/agentlint/cmd/agentlint@latest
 agentlint
 ```
 
+Or from a clone, with nothing installed but Go:
+
+```bash
+git clone https://github.com/quietmachineworks/agentlint
+cd agentlint && go build ./cmd/agentlint
+```
+
 ```
 /Users/you/.claude
 2 settings, 22 hook commands, 34 subagents, 876 skills
@@ -25,9 +32,34 @@ settings.json
 1 error(s), 4 warning(s)
 ```
 
-`--json` for another program, `--strict` to fail on warnings too, `--config` to
-read a directory other than `CLAUDE_CONFIG_DIR` or `~/.claude`. Exit 0 clean,
-1 with errors, 2 when the configuration directory cannot be read.
+## Usage
+
+```
+agentlint [--config DIR] [--json] [--strict] [--version]
+```
+
+`--config` reads a directory other than `CLAUDE_CONFIG_DIR` or `~/.claude`.
+`--json` writes the run for another program, counts included. `--strict` fails
+on warnings too.
+
+Exit 0 clean, 1 with errors, 2 when the configuration directory cannot be read.
+Nothing is written, ever, whatever the flags.
+
+### In CI
+
+A configuration lives in a repository as often as on a laptop, and it rots the
+same way. The exit code is the whole integration:
+
+```yaml
+- name: The agent configuration this repository ships still resolves
+  run: |
+    go run github.com/quietmachineworks/agentlint/cmd/agentlint@latest \
+      --config .claude --strict
+```
+
+`--strict` is the right setting for CI and the wrong one for a laptop: an
+undocumented settings key is a warning worth seeing once, not a broken build
+every morning.
 
 ## Why it exists
 
@@ -79,6 +111,17 @@ It writes nothing, ever.
 Permission-rule breadth and contradictions, cross-file precedence between user,
 project and policy settings, MCP server resolvability, secrets found in plain
 text, and lexical shadowing across descriptions.
+
+## Layout
+
+```
+cmd/agentlint      the binary, flags and exit codes
+internal/inventory discovery: settings, subagents, skills, following symlinks
+internal/check     one type per check, plus the shared Finding
+internal/schema    the published settings schema, embedded
+internal/report    text for a terminal, JSON for a program
+testdata/config    a configuration tree carrying one of every defect
+```
 
 ## Contributing
 
