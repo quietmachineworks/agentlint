@@ -1,0 +1,26 @@
+{
+  "version": 3,
+  "skills": {
+    "clean": {
+      "source": "example/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/example/skills.git",
+      "skillPath": "skills/clean/SKILL.md",
+      "skillFolderHash": "dcf92b9daa5d1d7c60fbf05c04c8c991d429bade"
+    },
+    "drifted": {
+      "source": "example/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/example/skills.git",
+      "skillPath": "skills/drifted/SKILL.md",
+      "skillFolderHash": "6875aa80d7b8b34f2faa55fd195a541f2d03f7d3"
+    },
+    "gone": {
+      "source": "example/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/example/skills.git",
+      "skillPath": "skills/gone/SKILL.md",
+      "skillFolderHash": "0000000000000000000000000000000000000000"
+    }
+  }
+}

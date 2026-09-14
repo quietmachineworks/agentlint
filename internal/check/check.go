@@ -46,6 +46,7 @@ type Checker interface {
 func All() []Checker {
 	return []Checker{
 		HookResolvable{},
+		HookCost{},
 		MCPResolvable{},
 		SecretInConfig{},
 		SettingsSchema{},
@@ -58,6 +59,7 @@ func All() []Checker {
 		SkillFrontmatter{},
 		NameCollision{},
 		DescriptionShadowing{},
+		SkillLock{},
 	}
 }
 

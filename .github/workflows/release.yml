@@ -34,3 +34,6 @@ jobs:
         run: go run github.com/goreleaser/goreleaser/v2@v2.15.4 release --clean --release-notes "$RUNNER_TEMP/release-notes.md"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # The default token cannot write to another repository. This one
+          # needs contents: write on quietmachineworks/homebrew-tap.
+          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}

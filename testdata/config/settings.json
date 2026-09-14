@@ -25,6 +25,16 @@
         ]
       }
     ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          { "type": "command", "command": "echo one" },
+          { "type": "command", "command": "echo two", "timeout": 5 },
+          { "type": "command", "command": "echo three" }
+        ]
+      }
+    ],
     "PostToolYuse": [
       {
         "matcher": "Edit",

@@ -4,6 +4,36 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- `hook-cost`, the price of a matcher per matching call: how many hooks sit on
+  it and the worst case they add up to, with the runtime's 60s default for an
+  entry that declares none. A warning, never an error, and only past a floor
+  of three hooks or two minutes, because every configuration has one hook on
+  `Bash`.
+- `skill-lock`, the `skills` CLI lockfile read against its tree: a skill edited
+  in place since install, which the next sync overwrites; an entry with nothing
+  installed behind it; a link into the manager's tree that the lockfile does
+  not know. The hash recomputed is the git tree object the CLI records for a
+  GitHub source, CRLF undone. A machine without the lockfile reads nothing here.
+- `--settings`, the file or inline JSON the agent is given as `claude
+  --settings`, read at its published place in the stack, between managed and
+  project local, so `settings-precedence` reports what it overrides.
+- A Homebrew tap, written by goreleaser on every tagged release:
+  `brew install quietmachineworks/tap/agentlint`.
+
+### Changed
+
+- `settings-schema` no longer reports a pattern mismatch under `permissions`.
+  The published pattern rejects any rule whose argument holds a closing
+  parenthesis; the runtime accepts one, settled against it on 2026-09-14:
+  `Bash(touch 'out (1).txt')` and the escaped form the runtime writes itself,
+  `Bash(touch 'out \(1\).txt')`, each given as `--settings`, allowed exactly
+  that command where it was denied without the rule. The schema is not
+  authoritative there.
+
 ## [0.1.1] - 2026-09-13
 
 ### Fixed

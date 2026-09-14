@@ -32,6 +32,7 @@ func release() string {
 func main() {
 	root := flag.String("config", "", "configuration directory to read (default: CLAUDE_CONFIG_DIR, else ~/.claude)")
 	project := flag.String("project", ".", "repository whose .claude settings take part (empty to read none)")
+	settings := flag.String("settings", "", "settings the agent is given as --settings, a file or inline JSON, read at that place in the stack")
 	asJSON := flag.Bool("json", false, "write the run as JSON")
 	strict := flag.Bool("strict", false, "exit non-zero on warnings too")
 	showVersion := flag.Bool("version", false, "print the version and exit")
@@ -55,6 +56,13 @@ func main() {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "agentlint: %v\n", err)
 		os.Exit(2)
+	}
+
+	if *settings != "" {
+		if err := inv.AddCommandLine(*settings); err != nil {
+			fmt.Fprintf(os.Stderr, "agentlint: %v\n", err)
+			os.Exit(2)
+		}
 	}
 
 	run := report.Summarise(inv, check.Run(inv, check.All()))

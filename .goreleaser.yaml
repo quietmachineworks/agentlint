@@ -15,6 +15,26 @@ archives:
       - goos: windows
         formats: [zip]
 
+# The tap is written on release, never by hand, which is what keeps it from
+# going stale. A cask rather than a formula: goreleaser retires formula
+# generation at v2.16, and a cask installs the same archive on macOS and Linux.
+homebrew_casks:
+  - repository:
+      owner: quietmachineworks
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    homepage: https://github.com/quietmachineworks/agentlint
+    description: Resolve what an agent's configuration declares against what is on the machine
+    commit_author:
+      name: goreleaserbot
+      email: bot@goreleaser.com
+    hooks:
+      post:
+        install: |
+          if OS.mac?
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/agentlint"]
+          end
+
 # The release notes are the changelog section for the tag, passed to
 # --release-notes by the workflow. Disabling the changelog here empties the
 # release body instead of leaving that file to fill it.

@@ -18,6 +18,12 @@ func run(t *testing.T) []check.Finding {
 		t.Fatal(err)
 	}
 	t.Setenv("CLAUDE_CONFIG_DIR", root)
+	home, err := filepath.Abs("../../testdata/home")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home)
 	inv, err := inventory.Load(root, root)
 	if err != nil {
 		t.Fatal(err)
@@ -104,23 +110,81 @@ func TestAgentWithoutFrontmatterIsCaught(t *testing.T) {
 	}
 }
 
-// A regex in a published schema is the likeliest place for it to be a
-// simplification of the parser it describes, so a rule the pattern rejects is
-// reported as suspect and never fails a run on its own.
-func TestPatternMismatchIsOnlyAWarning(t *testing.T) {
+// The published pattern rejects any permission rule whose argument holds a
+// closing parenthesis. The runtime accepts one (settled against it on
+// 2026-09-14: `Bash(touch 'out (1).txt')` and its escaped form in --settings
+// each allowed exactly that command), so the schema is not authoritative
+// there and says nothing.
+func TestPermissionRuleThePatternRejectsIsNotReported(t *testing.T) {
 	for _, finding := range find(run(t), "settings-schema") {
-		if !strings.HasPrefix(finding.Where, "permissions.allow") {
-			continue
+		if strings.HasPrefix(finding.Where, "permissions") {
+			t.Fatalf("reported a rule the runtime accepts: %v", finding)
 		}
-		if finding.Severity != check.Warning {
-			t.Fatalf("a pattern mismatch must not be an error: %v", finding)
-		}
-		if finding.Fix == "" {
-			t.Fatal("no caveat attached to a pattern mismatch")
-		}
-		return
 	}
-	t.Fatal("the rule the published pattern rejects was not reported")
+}
+
+// Three hooks on one hot matcher are priced; the single hooks on Bash and
+// Write that every configuration carries are not.
+func TestHookStackIsPricedOncePastTheFloor(t *testing.T) {
+	findings := find(run(t), "hook-cost")
+	if len(findings) != 1 || findings[0].Where != "PostToolUse[Write|Edit]" || findings[0].Severity != check.Warning {
+		t.Fatalf("got %v", findings)
+	}
+	if !strings.Contains(findings[0].Message, "3 hooks") || !strings.Contains(findings[0].Message, "125s") {
+		t.Fatalf("the price is not named: %q", findings[0].Message)
+	}
+}
+
+// Settings given on the command line sit at a published place in the stack,
+// so a scalar they repeat from a file below is reported by the precedence
+// check like any other, and keys the runtime merges are not.
+func TestCommandLineSettingsTakePartInPrecedence(t *testing.T) {
+	root, _ := filepath.Abs("../../testdata/config")
+	t.Setenv("CLAUDE_CONFIG_DIR", root)
+	inv, err := inventory.Load(root, root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := inv.AddCommandLine(`{"model": "sonnet", "hooks": {}}`); err != nil {
+		t.Fatal(err)
+	}
+	var overridden []string
+	for _, finding := range find(check.Run(inv, check.All()), "settings-precedence") {
+		if strings.Contains(finding.Message, "command line") {
+			overridden = append(overridden, finding.Where)
+		}
+	}
+	if len(overridden) == 0 || overridden[0] != "model" {
+		t.Fatalf("want model overridden by the command line, got %v", overridden)
+	}
+	for _, key := range overridden {
+		if key == "hooks" {
+			t.Fatal("hooks merge, and were reported as overridden")
+		}
+	}
+	if err := inv.AddCommandLine(`{not json`); err == nil {
+		t.Fatal("inline JSON that does not parse was accepted")
+	}
+}
+
+// The lockfile carries what the folder cannot show: a skill edited in place
+// is a warning, an entry with nothing behind it is an error, and one that
+// still matches its hash is silent.
+func TestLockfileDriftAndOrphansAreReported(t *testing.T) {
+	findings := find(run(t), "skill-lock")
+	seen := map[string]check.Severity{}
+	for _, finding := range findings {
+		seen[finding.Where] = finding.Severity
+	}
+	if severity, ok := seen["drifted"]; !ok || severity != check.Warning {
+		t.Fatalf("drift not reported as a warning: %v", findings)
+	}
+	if severity, ok := seen["gone"]; !ok || severity != check.Error {
+		t.Fatalf("orphaned entry not reported as an error: %v", findings)
+	}
+	if _, ok := seen["clean"]; ok {
+		t.Fatalf("a skill that matches its hash was reported: %v", findings)
+	}
 }
 
 // One defect is one finding: the schema also rejects an unknown hook event, and

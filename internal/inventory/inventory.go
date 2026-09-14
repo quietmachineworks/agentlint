@@ -6,6 +6,7 @@ package inventory
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -56,6 +57,7 @@ type Inventory struct {
 	Agents      []Definition
 	Skills      []Definition
 	MCP         []MCPServer
+	Locks       []Lockfile
 	Read        []string
 }
 
@@ -105,7 +107,32 @@ func Load(root, project string) (*Inventory, error) {
 	servers, readMCP := loadMCP(root, inv.Plugins)
 	inv.MCP = servers
 	inv.Read = append(inv.Read, readMCP...)
+	inv.Locks = loadLocks(project)
+	for _, lock := range inv.Locks {
+		inv.Read = append(inv.Read, lock.Path)
+	}
 	return inv, nil
+}
+
+// AddCommandLine reads the settings the agent is given as --settings: a file,
+// or the same JSON inline. It is real configuration at a published place in
+// the stack, and nothing else validates it.
+func (inv *Inventory) AddCommandLine(arg string) error {
+	var s Settings
+	if strings.HasPrefix(strings.TrimSpace(arg), "{") {
+		s = parseSettings("--settings", ScopeCommandLine, []byte(arg))
+		if s.Err != nil {
+			return fmt.Errorf("--settings is not valid JSON: %w", s.Err)
+		}
+	} else {
+		if !exists(arg) {
+			return fmt.Errorf("--settings: cannot read %s", arg)
+		}
+		s = loadSettings(arg, ScopeCommandLine)
+	}
+	inv.Settings = append(inv.Settings, s)
+	inv.Read = append(inv.Read, s.Path)
+	return nil
 }
 
 // settingsPaths are every file that contributes, lowest level first.
@@ -131,12 +158,15 @@ func settingsPaths(root, project string) []struct {
 }
 
 func loadSettings(path string, scope Scope) Settings {
-	s := Settings{Path: path, Scope: scope}
 	data, err := os.ReadFile(path)
 	if err != nil {
-		s.Err = err
-		return s
+		return Settings{Path: path, Scope: scope, Err: err}
 	}
+	return parseSettings(path, scope, data)
+}
+
+func parseSettings(path string, scope Scope, data []byte) Settings {
+	s := Settings{Path: path, Scope: scope}
 	if err := json.Unmarshal(data, &s.Raw); err != nil {
 		s.Err = err
 		return s

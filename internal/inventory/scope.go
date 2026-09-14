@@ -23,6 +23,7 @@ var (
 	ScopeUserLocal    = Scope{"user local", 0}
 	ScopeProject      = Scope{"shared project", 2}
 	ScopeProjectLocal = Scope{"project local", 3}
+	ScopeCommandLine  = Scope{"command line", 4}
 	ScopeManaged      = Scope{"managed", 5}
 	ScopePlugin       = Scope{"plugin", 0}
 )

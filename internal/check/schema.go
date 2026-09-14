@@ -94,13 +94,28 @@ func (s SettingsSchema) Run(inv *inventory.Inventory) []Finding {
 }
 
 // coveredElsewhere drops what a dedicated check already reports with a better
-// message, so one defect is never two findings.
+// message, so one defect is never two findings, and what the schema is not
+// authoritative on.
+//
+// The permission-rule pattern rejects any argument holding a closing
+// parenthesis. The runtime accepts one, settled against it on 2026-09-14:
+// both `Bash(touch 'out (1).txt')` and the escaped form it writes itself,
+// `Bash(touch 'out \(1\).txt')`, allowed exactly that command where the same
+// command without the rule was denied. A pattern mismatch under permissions
+// describes the regex, not the configuration.
 func coveredElsewhere(leaf *jsonschema.ValidationError) bool {
-	if len(leaf.InstanceLocation) == 0 || leaf.InstanceLocation[0] != "hooks" {
+	if len(leaf.InstanceLocation) == 0 {
 		return false
 	}
-	_, additional := leaf.ErrorKind.(*kind.AdditionalProperties)
-	return additional
+	switch leaf.InstanceLocation[0] {
+	case "hooks":
+		_, additional := leaf.ErrorKind.(*kind.AdditionalProperties)
+		return additional
+	case "permissions":
+		_, pattern := leaf.ErrorKind.(*kind.Pattern)
+		return pattern
+	}
+	return false
 }
 
 // describe renders one violation short enough to read in a terminal. A pattern
